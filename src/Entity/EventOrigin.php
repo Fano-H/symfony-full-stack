@@ -2,12 +2,19 @@
 
 namespace App\Entity;
 
-use App\Repository\EventOriginRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\EventOriginRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: EventOriginRepository::class)]
+
+#[UniqueEntity(
+    fields: [
+        'label'
+    ]
+)]
 class EventOrigin
 {
     #[ORM\Id]

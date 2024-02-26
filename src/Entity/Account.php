@@ -6,8 +6,15 @@ use App\Repository\AccountRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: AccountRepository::class)]
+
+#[UniqueEntity(
+    fields: [
+        'name'
+    ]
+)]
 class Account
 {
     #[ORM\Id]
