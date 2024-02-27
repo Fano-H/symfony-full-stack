@@ -79,6 +79,9 @@ class RecordFile
     #[ORM\ManyToOne(inversedBy: 'recordFiles')]
     private ?ProspectType $prospectType = null;
 
+    #[ORM\ManyToOne(inversedBy: 'recordFiles')]
+    private ?Account $businessAccount = null;
+
     public function __construct()
     {
     }
@@ -312,6 +315,18 @@ class RecordFile
     public function setProspectType(?ProspectType $prospectType): static
     {
         $this->prospectType = $prospectType;
+
+        return $this;
+    }
+
+    public function getBusinessAccount(): ?Account
+    {
+        return $this->businessAccount;
+    }
+
+    public function setBusinessAccount(?Account $businessAccount): static
+    {
+        $this->businessAccount = $businessAccount;
 
         return $this;
     }

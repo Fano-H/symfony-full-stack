@@ -31,10 +31,14 @@ class Account
     #[ORM\OneToMany(targetEntity: EventVehicle::class, mappedBy: 'account')]
     private Collection $eventVehicles;
 
+    #[ORM\OneToMany(targetEntity: RecordFile::class, mappedBy: 'businessAccount')]
+    private Collection $recordFiles;
+
     public function __construct()
     {
         $this->vehicles = new ArrayCollection();
         $this->eventVehicles = new ArrayCollection();
+        $this->recordFiles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -108,6 +112,36 @@ class Account
             // set the owning side to null (unless already changed)
             if ($eventVehicle->getAccount() === $this) {
                 $eventVehicle->setAccount(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RecordFile>
+     */
+    public function getRecordFiles(): Collection
+    {
+        return $this->recordFiles;
+    }
+
+    public function addRecordFile(RecordFile $recordFile): static
+    {
+        if (!$this->recordFiles->contains($recordFile)) {
+            $this->recordFiles->add($recordFile);
+            $recordFile->setBusinessAccount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRecordFile(RecordFile $recordFile): static
+    {
+        if ($this->recordFiles->removeElement($recordFile)) {
+            // set the owning side to null (unless already changed)
+            if ($recordFile->getBusinessAccount() === $this) {
+                $recordFile->setBusinessAccount(null);
             }
         }
 

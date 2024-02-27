@@ -57,9 +57,16 @@ class Vehicle
     #[ORM\OneToMany(targetEntity: RecordFile::class, mappedBy: 'vehicle')]
     private Collection $recordFiles;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $dateofPurchase = null;
+
+    #[ORM\OneToMany(targetEntity: EventVehicle::class, mappedBy: 'vehicle')]
+    private Collection $eventVehicles;
+
     public function __construct()
     {
         $this->recordFiles = new ArrayCollection();
+        $this->eventVehicles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -211,6 +218,48 @@ class Vehicle
             // set the owning side to null (unless already changed)
             if ($recordFile->getVehicle() === $this) {
                 $recordFile->setVehicle(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDateofPurchase(): ?\DateTimeInterface
+    {
+        return $this->dateofPurchase;
+    }
+
+    public function setDateofPurchase(?\DateTimeInterface $dateofPurchase): static
+    {
+        $this->dateofPurchase = $dateofPurchase;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EventVehicle>
+     */
+    public function getEventVehicles(): Collection
+    {
+        return $this->eventVehicles;
+    }
+
+    public function addEventVehicle(EventVehicle $eventVehicle): static
+    {
+        if (!$this->eventVehicles->contains($eventVehicle)) {
+            $this->eventVehicles->add($eventVehicle);
+            $eventVehicle->setVehicle($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEventVehicle(EventVehicle $eventVehicle): static
+    {
+        if ($this->eventVehicles->removeElement($eventVehicle)) {
+            // set the owning side to null (unless already changed)
+            if ($eventVehicle->getVehicle() === $this) {
+                $eventVehicle->setVehicle(null);
             }
         }
 

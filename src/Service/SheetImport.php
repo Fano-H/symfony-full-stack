@@ -2,20 +2,34 @@
 
 namespace App\Service;
 
-use App\Entity\Account;
+use App\Entity\City;
 use App\Entity\Brand;
-use App\Entity\Energy;
-use App\Entity\EventOrigin;
 use App\Entity\Model;
+use App\Entity\Energy;
+use App\Entity\Seller;
+use App\Entity\Account;
 use App\Entity\Vehicle;
-use App\Repository\AccountRepository;
+use App\Entity\Civility;
+use App\Entity\SaleType;
+use App\Entity\RecordFile;
+use App\Entity\EventOrigin;
+use App\Entity\EventVehicle;
+use App\Entity\ProspectType;
+use App\Repository\CityRepository;
 use App\Repository\BrandRepository;
-use App\Repository\EnergyRepository;
-use App\Repository\EventOriginRepository;
 use App\Repository\ModelRepository;
+use App\Repository\EnergyRepository;
+use App\Repository\SellerRepository;
+use App\Repository\AccountRepository;
 use App\Repository\VehicleRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\CivilityRepository;
+use App\Repository\SaleTypeRepository;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Repository\RecordFileRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\EventOriginRepository;
+use App\Repository\EventVehicleRepository;
+use App\Repository\ProspectTypeRepository;
 
 class SheetImport
 {
@@ -27,6 +41,13 @@ class SheetImport
         private ModelRepository $modelRepository,
         private EnergyRepository $energyRepository,
         private EventOriginRepository $eventOriginRepository,
+        private RecordFileRepository $recordFileRepository,
+        private CivilityRepository $civilityRepository,
+        private CityRepository $cityRepository,
+        private SaleTypeRepository $saleTypeRepository,
+        private SellerRepository $sellerRepository,
+        private ProspectTypeRepository $prospectTypeRepository,
+        private EventVehicleRepository $eventVehicleRepository,
     )
     {
     }
@@ -77,27 +98,77 @@ class SheetImport
             $eventDate = $row[33];
             $eventOrigin = $row[34];
             
-        }
+            // Insert data
+            
+            $businessAccount = $this->handleAccount($businessAccount);
+            $brand = $this->handleBrand($brandLabel);
+            $model = $this->handleModel($modelLabel, $brand);
+            $energy = $this->handleEnergy($energyLabel);
+            $originEvent = $this->handleEventOrigin($eventOrigin);
+            $eventAccount = $this->handleAccount($eventAccount);
+            $lastEventAccount = $this->handleAccount($lastEventAccount);
 
-        $account = $this->handleAccount($businessAccount);
-        $brand = $this->handleBrand($brandLabel);
-        $model = $this->handleModel($modelLabel, $brand);
-        $energy = $this->handleEnergy($energyLabel);
-        $originEvent = $this->handleEventOrigin($eventOrigin);
-        $eventAccount = $this->handleAccount($eventAccount);
+            $vehicle = $this->handleVehicle(
+                $vin,
+                $registrationNo,
+                new \DateTime($dateOfCirculation),
+                $version,
+                $mileAge,
+                $brand,
+                $model,
+                $energy,
+                $originEvent,
+                $eventAccount,
+                new \DateTime($purchaseDate)
+            );
+    
+            $eventVehicle = $this->handleEventVehicle(
+                new \DateTime($eventDate),
+                $vehicle,
+                $eventAccount
+            );
+    
+            $lastEventVehicle = $this->handleEventVehicle(
+                new \DateTime($lastEventDate),
+                $vehicle,
+                $lastEventAccount
+            );
+    
+            $civility = $this->handleCivility($civilityLabel);
+            $city = $this->handleCity($cityName, $postalCode);
+            $saleType = $this->handleSaleType($vnVoType);
+            
+            $seller = $vnSeller ?? $voSeller;
+            $seller = $this->handleSeller($seller);
+    
+            $prospectType = $this->handleProspectType($prospectType);
+    
+            $recordFile = $this->handleRecordFile(
+                $recordFileNo,
+                $civility,
+                $lastName,
+                $firstName,
+                $trackNumberAndName,
+                $additionalAddress1,
+                $homePhone,
+                $cellPhone,
+                $jobPhone,
+                $email,
+                $vehicle,
+                $currentVehicleOwner,
+                $city,
+                $seller,
+                $saleType,
+                $invoicingComment,
+                $vnVoFolderNo,
+                $saleIntermediary,
+                $prospectType,
+                $businessAccount
+            );
 
-        $vehicle = $this->handleVehicle(
-            $vin,
-            $registrationNo,
-            new \DateTime($dateOfCirculation),
-            $version,
-            $mileAge,
-            $brand,
-            $model,
-            $energy,
-            $originEvent,
-            $eventAccount
-        );
+
+        } // end for
+
         
     }
 
@@ -120,7 +191,7 @@ class SheetImport
         return $account;
     }
 
-    private function handleVehicle(string $vin, string|null $registrationNo, \Datetime|null $dateOfCirculation, string|null $version, string|null $mileAge, Brand $brand, Model|null $model, Energy|null $energy, EventOrigin $eventOrigin, Account $eventAccount): Vehicle
+    private function handleVehicle(string $vin, string|null $registrationNo, \Datetime|null $dateOfCirculation, string|null $version, string|null $mileAge, Brand $brand, Model|null $model, Energy|null $energy, EventOrigin $eventOrigin, Account $eventAccount, \Datetime|null $dateofPurchase): Vehicle
     {
         $vin = trim($vin);
         $vehicle = $this->vehicleRepository->findOneBy(["vin" => $vin]);
@@ -204,6 +275,126 @@ class SheetImport
             $this->saveInstance($eventOrigin);
         }
         return $eventOrigin;
+    }
+
+    public function handleCivility($name): Civility
+    {
+        $name = trim($name);
+        $civility = $this->civilityRepository->findOneBy(["name" => $name]);
+
+        if(!$civility){
+            $civility = new Civility();
+            $civility->setName($name);
+
+            $this->saveInstance($civility);
+        }
+        return $civility;
+    }
+
+    public function handleCity($name, $postCode): City
+    {
+        $name = trim($name);
+        $postCode = trim($postCode);
+        $city = $this->cityRepository->findOneBy(["name" => $name, "postCode" => $postCode]);
+
+        if(!$city){
+            $city = new City();
+            $city->setName($name);
+            $city->setPostCode($postCode);
+
+            $this->saveInstance($city);
+        }
+        return $city;
+    }
+
+    public function handleSaleType($label): SaleType
+    {
+        $label = trim($label);
+        $saleType = $this->saleTypeRepository->findOneBy(["label" => $label]);
+
+        if(!$saleType){
+            $saleType = new SaleType();
+            $saleType->setLabel($label);
+
+            $this->saveInstance($saleType);
+        }
+
+        return $saleType;
+    }
+
+    public function handleSeller($name): Seller
+    {
+        $name = trim($name);
+        $seller = $this->sellerRepository->findOneBy(["name" => $name]);
+
+        if(!$seller){
+            $seller = new Seller();
+            $seller->setName($name);
+
+            $this->saveInstance($seller);
+        }
+        return $seller;
+    }
+
+    public function handleProspectType($label): ProspectType
+    {
+        $label = trim($label);
+        $prospectType = $this->prospectTypeRepository->findOneBy(["label" => $label]);
+
+        if(!$prospectType){
+            $prospectType = new ProspectType();
+            $prospectType->setLabel($label);
+
+            $this->saveInstance($prospectType);
+        }
+        return $prospectType;
+    }
+    private function handleRecordFile(string $recordNo, Civility|null $civility, string $lastName, string|null $firstName, string|null $trackNumberName, string|null $additionalAddress1, string|null $homePhone, string|null $cellPhone, string|null $jobPhone, string|null $email, Vehicle $vehicle, string|null $currentVehicleOwner, City $city, Seller|null $seller, SaleType $saleType, string|null $invoicingComment, string|null $saleFolderNo, string|null $saleIntermediary, ProspectType $prospectType, Account $businessAccount): RecordFile
+    {
+        $recordNo = trim($recordNo);
+        $recordFile = $this->recordFileRepository->findOneBy(["recordNo" => $recordNo]);
+
+        if(!$recordFile){
+            $recordFile = new RecordFile();
+            $recordFile->setRecordNo($recordNo);
+            $recordFile->setCivility($civility);
+            $recordFile->setLastName($lastName);
+            $recordFile->setFirstName($firstName);
+            $recordFile->setTrackNumberName($trackNumberName);
+            $recordFile->setAdditionalAddress1($additionalAddress1);
+            $recordFile->setHomePhone($homePhone);
+            $recordFile->setCellPhone($cellPhone);
+            $recordFile->setJobPhone($jobPhone);
+            $recordFile->setEmail($email);
+            $recordFile->setVehicle($vehicle);
+            $recordFile->setCurrentVehicleOwner($currentVehicleOwner);
+            $recordFile->setCity($city);
+            $recordFile->setSeller($seller);
+            $recordFile->setSaleType($saleType);
+            $recordFile->setInvoicingComment($invoicingComment);
+            $recordFile->setSaleFolderNo($saleFolderNo);
+            $recordFile->setSaleIntermediary($saleIntermediary);
+            $recordFile->setProspectType($prospectType);
+
+            $this->saveInstance($recordFile);
+
+        }
+        return $recordFile;
+    }
+
+    public function handleEventVehicle(\DateTime $dateEvent, Vehicle $vehicle, Account $account): EventVehicle
+    {
+        $event = $this->eventVehicleRepository->findOneBy(["dateEvent" => $dateEvent, "vehicle" => $vehicle, "account" => $account]);
+
+        if(!$event){
+            $event = new EventVehicle();
+            $event->setDateEvent($dateEvent);
+            $event->setVehicle($vehicle);
+            $event->setAccount($account);
+
+            $this->saveInstance($event);
+        }
+        return $event;
     }
 
 }   

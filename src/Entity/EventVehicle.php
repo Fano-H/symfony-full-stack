@@ -14,11 +14,14 @@ class EventVehicle
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateEvent = null;
 
     #[ORM\ManyToOne(inversedBy: 'eventVehicles')]
     private ?Account $account = null;
+
+    #[ORM\ManyToOne(inversedBy: 'eventVehicles')]
+    private ?Vehicle $vehicle = null;
 
     public function getId(): ?int
     {
@@ -45,6 +48,18 @@ class EventVehicle
     public function setAccount(?Account $account): static
     {
         $this->account = $account;
+
+        return $this;
+    }
+
+    public function getVehicle(): ?Vehicle
+    {
+        return $this->vehicle;
+    }
+
+    public function setVehicle(?Vehicle $vehicle): static
+    {
+        $this->vehicle = $vehicle;
 
         return $this;
     }
