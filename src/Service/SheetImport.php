@@ -177,8 +177,11 @@ class SheetImport
         $this->entityManager->flush();
     }
 
-    private function handleAccount(string $accountName): Account
+    private function handleAccount(?string $accountName): ?Account
     {
+        if(!$accountName)
+            return null;
+
         $accountName = trim($accountName);
         $account = $this->accountRepository->findOneBy(["name" => $accountName]);
         
@@ -215,8 +218,11 @@ class SheetImport
         return $vehicle;
     }
 
-    private function handleBrand(string $name): Brand
+    private function handleBrand(?string $name): ?Brand
     {
+        if(!$name)
+            return null;
+
         $name = trim($name);
         $brand = $this->brandRepository->findOneBy(["name" => $name]);
 
@@ -230,8 +236,11 @@ class SheetImport
         return $brand;
     }
 
-    private function handleModel(string $name, Brand $brand): Model
+    private function handleModel(?string $name, Brand $brand): ?Model
     {
+        if(!$name)
+            return null;
+
         $name = trim($name);
         $model = $this->modelRepository->findOneBy(["name" => $name, "brand" => $brand]);
 
@@ -247,8 +256,11 @@ class SheetImport
         return $model;
     }
 
-    private function handleEnergy(string $label): Energy
+    private function handleEnergy(?string $label): ?Energy
     {
+        if(!$label)
+            return null;
+
         $label = trim($label);
         $energy = $this->energyRepository->findOneBy(["label" => $label]);
 
@@ -262,8 +274,11 @@ class SheetImport
         return $energy;
     }
 
-    private function handleEventOrigin(string $label): EventOrigin
+    private function handleEventOrigin(?string $label): ?EventOrigin
     {   
+        if(!$label)
+            return null;
+
         $label = trim($label);
         $eventOrigin = $this->eventOriginRepository->findOneBy(["label" => $label]);
 
@@ -277,8 +292,11 @@ class SheetImport
         return $eventOrigin;
     }
 
-    public function handleCivility($name): Civility
+    public function handleCivility(?string $name): ?Civility
     {
+        if(!$name)
+            return null;
+
         $name = trim($name);
         $civility = $this->civilityRepository->findOneBy(["name" => $name]);
 
@@ -291,7 +309,7 @@ class SheetImport
         return $civility;
     }
 
-    public function handleCity($name, $postCode): City
+    public function handleCity(string $name, string $postCode): City
     {
         $name = trim($name);
         $postCode = trim($postCode);
@@ -307,7 +325,7 @@ class SheetImport
         return $city;
     }
 
-    public function handleSaleType($label): SaleType
+    public function handleSaleType(string $label): SaleType
     {
         $label = trim($label);
         $saleType = $this->saleTypeRepository->findOneBy(["label" => $label]);
@@ -322,8 +340,11 @@ class SheetImport
         return $saleType;
     }
 
-    public function handleSeller($name): Seller
+    public function handleSeller(?string $name): ?Seller
     {
+        if(!$name)
+            return null;
+        
         $name = trim($name);
         $seller = $this->sellerRepository->findOneBy(["name" => $name]);
 
