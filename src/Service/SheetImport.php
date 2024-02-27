@@ -211,6 +211,7 @@ class SheetImport
             $vehicle->setEnergy($energy);
             $vehicle->setOriginEvent($eventOrigin);
             $vehicle->setEventAccount($eventAccount);
+            $vehicle->setDateofPurchase($dateofPurchase);
 
             $this->saveInstance($vehicle);
         }
@@ -344,7 +345,7 @@ class SheetImport
     {
         if(!$name)
             return null;
-        
+
         $name = trim($name);
         $seller = $this->sellerRepository->findOneBy(["name" => $name]);
 
@@ -396,6 +397,7 @@ class SheetImport
             $recordFile->setSaleFolderNo($saleFolderNo);
             $recordFile->setSaleIntermediary($saleIntermediary);
             $recordFile->setProspectType($prospectType);
+            $recordFile->setBusinessAccount($businessAccount);
 
             $this->saveInstance($recordFile);
 
