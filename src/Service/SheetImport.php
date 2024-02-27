@@ -194,7 +194,7 @@ class SheetImport
         return $account;
     }
 
-    private function handleVehicle(string $vin, string|null $registrationNo, \Datetime|null $dateOfCirculation, string|null $version, string|null $mileAge, Brand $brand, Model|null $model, Energy|null $energy, EventOrigin $eventOrigin, Account $eventAccount, \Datetime|null $dateofPurchase): Vehicle
+    private function handleVehicle(string $vin, ?string $registrationNo, ?\Datetime $dateOfCirculation, ?string $version, ?string $mileAge, Brand $brand, ?Model $model, ?Energy $energy, EventOrigin $eventOrigin, Account $eventAccount, ?\Datetime $dateofPurchase): Vehicle
     {
         $vin = trim($vin);
         $vehicle = $this->vehicleRepository->findOneBy(["vin" => $vin]);
@@ -371,7 +371,7 @@ class SheetImport
         }
         return $prospectType;
     }
-    private function handleRecordFile(string $recordNo, Civility|null $civility, string $lastName, string|null $firstName, string|null $trackNumberName, string|null $additionalAddress1, string|null $homePhone, string|null $cellPhone, string|null $jobPhone, string|null $email, Vehicle $vehicle, string|null $currentVehicleOwner, City $city, Seller|null $seller, SaleType $saleType, string|null $invoicingComment, string|null $saleFolderNo, string|null $saleIntermediary, ProspectType $prospectType, Account $businessAccount): RecordFile
+    private function handleRecordFile(string $recordNo, ?Civility $civility, string $lastName, ?string $firstName, ?string $trackNumberName, ?string $additionalAddress1, ?string $homePhone, ?string $cellPhone, ?string $jobPhone, ?string $email, Vehicle $vehicle, ?string $currentVehicleOwner, City $city, ?Seller $seller, SaleType $saleType, ?string $invoicingComment, ?string $saleFolderNo, ?string $saleIntermediary, ProspectType $prospectType, Account $businessAccount): RecordFile
     {
         $recordNo = trim($recordNo);
         $recordFile = $this->recordFileRepository->findOneBy(["recordNo" => $recordNo]);
