@@ -19,6 +19,7 @@
     },
     "dependencies": {
         "bootstrap": "^4.1.3",
+        "datatables": "^1.10.18",
         "jquery": "^3.3.1"
     }
 }
